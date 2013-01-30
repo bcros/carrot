@@ -1,0 +1,9 @@
+= What =
+
+Various helpers and wrappers that I keep re-implementing over the years.
+
+= Carrot? =
+
+jquery has underscore (_) so I have carrot (^).
+
+*(Although I can't use a literal carrot.  sadface.)*
