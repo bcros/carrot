@@ -9,8 +9,12 @@ def list_open(filename):
     '''
     with open(filename, 'r') as f:
         data = f.read()
+
     lines = data.split("\n")
+    original = lines[:]  # If the file is large, we don't want to force re-write unless something changes
     yield lines
-    with open(filename, 'w') as f:
-        for line in lines:
-            f.write("%s\n" % line)
+
+    if lines != original:
+        with open(filename, 'w') as f:
+            for line in lines:
+                f.write("%s\n" % line)
