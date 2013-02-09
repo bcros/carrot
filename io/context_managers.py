@@ -11,7 +11,8 @@ def list_open(filename):
         data = f.read()
 
     lines = data.split("\n")
-    original = lines[:]  # If the file is large, we don't want to force re-write unless something changes
+    # If the file is large, we don't want to force re-write unless something changes
+    original = lines[:]
     yield lines
 
     if lines != original:

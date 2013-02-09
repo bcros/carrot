@@ -3,16 +3,16 @@ import errno
 import shutil
 
 
-def ensure_file(file):
-    '''Ensures a file exists, but does not modify it.'''
-    with open(file, 'a') as f:
-        pass
-
-
 def blank(file):
     '''Creates a blank (empty) file, or if one exists, overwrites it with a blank file.'''
     with open(file, 'w') as f:
         f.write("")
+
+
+def ensure_file(file):
+    '''Ensures a file exists, but does not modify it.'''
+    with open(file, 'a') as f:
+        pass
 
 
 def mkdir(path):
