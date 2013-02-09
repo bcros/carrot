@@ -1,4 +1,5 @@
 from . import pipe
+from .. import functions
 import itertools
 
 _real_all = all
@@ -53,7 +54,7 @@ def take_every(iterable, step):
 
 
 @pipe
-def take_until(iterable, predicate):
+def take_until(iterable, predicate=functions.false):
     """Returns items until predicate(item) is true for an item in iterable"""
     for item in iterable:
         if not predicate(item):
@@ -63,18 +64,18 @@ def take_until(iterable, predicate):
 
 
 @pipe
-def take_while(iterable, predicate):
+def take_while(iterable, predicate=functions.true):
     """Returns items while predicate(item) is true for item in iterable"""
     return itertools.takewhile(predicate, iterable)
 
 
 @pipe
-def where(iterable, predicate, reject_callback=None):
+def where(iterable, predicate=functions.true):
     """Returns a generator on iterable of items where predicate(item)"""
     return (x for x in iterable if predicate(x))
 
 
 @pipe
-def where_not(iterable, predicate):
+def where_not(iterable, predicate=functions.false):
     """Returns a generator on iterable of items where not predicate(item)"""
     return (x for x in iterable if not predicate(x))
