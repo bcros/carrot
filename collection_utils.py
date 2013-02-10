@@ -12,12 +12,10 @@ def merge_dicts(*dicts):
 def set_transaction(mutable_set, internal_set=set):
     '''
     Allows you to mutate a set during iteration.
-    Changes are not reflected in the scope of the modifying iteration,
-        but are available immediately after.
+    Changes are not reflected in the scope of the modifying iteration, but are available immediately after.
     Leaving the scope of the context manager commits pending changes.
-    internal_set should support the usual mutable set functions,
-        including update and difference_update.
-        (see the built-in collections.MutableSet)
+    internal_set should support the usual mutable set functions, as well as update.
+        (see set.update)
     '''
     transaction_set = TransactionSet(mutable_set, internal_set=internal_set)
 
@@ -28,13 +26,12 @@ def set_transaction(mutable_set, internal_set=set):
     mutable_set.update(transaction_set)
 
 
-def apply_set_diffs(set, add, discard):
-    '''
-    Adds all elements of add to the set
-    Discards all elements of discard from the set
-    '''
-    set.update(add)
-    set.difference_update(discard)
+def apply_transaction(set, trans):
+    for value, op in trans.iteritems():
+        if op:
+            set.add(value)
+        else:
+            set.discard(value)
 
 
 class TransactionSet(collections.MutableSet):
@@ -45,8 +42,7 @@ class TransactionSet(collections.MutableSet):
     def __init__(self, iterable=None, internal_set=set):
         self._setcls = internal_set
         self._set = self._setcls()
-        self._tradd = self._setcls()
-        self._trdis = self._setcls()
+        self._tran = {}
         if iterable is not None:
             self._set.update(iterable)
 
@@ -55,27 +51,38 @@ class TransactionSet(collections.MutableSet):
         Commit any pending changes to the underlying set.
         Clear transaction sets
         '''
-        apply_set_diffs(self._set, self._tradd, self._trdis)
-        self._tradd, self._trdis = self._setcls(), self._setcls()
+        apply_transaction(self._set, self._tran)
+        self._tran = {}
 
     def add(self, value):
-        self._tradd.add(value)
-        self._trdis.discard(value)
+        self._tran[value] = 1
 
     def discard(self, value):
-        self._trdis.add(value)
-        self._tradd.discard(value)
+        self._tran[value] = 0
+
+    def update(self, iterable):
+        for it in iterable:
+            self.add(it)
 
     def __contains__(self, value):
-        return (value in self._tradd
-                or value in self._set and not value in self._trdis)
+        if value in self._tran:
+            return self._tran[value]
+        return value in self._set
 
     def __len__(self):
-        return len(self._set) + len(self._tradd) - len(self._trdis)
+        tran_vals = self._tran.values()
+        return len(self._set) + tran_vals.count(1) - tran_vals.count(0)
 
     def __iter__(self):
-        if not self._tradd and not self._trdis:
+        if not self._tran:
             return iter(self._set)
         snapshot = self._setcls(self._set)
-        apply_set_diffs(snapshot, self._tradd, self._trdis)
+        apply_transaction(snapshot, self._tran)
         return iter(snapshot)
+
+    def __repr__(self):
+        items = map(str, self)
+        return "TransactionSet([{}])".format(', '.join(items))
+
+    def __str__(self):
+        return repr(self)
