@@ -1,5 +1,8 @@
 ## carrot.debugging.__init__
 import time
+import cProfile
+import pstats
+from ..io import rm
 
 
 def class_name(obj):
@@ -15,6 +18,14 @@ def class_name(obj):
     print class_name(d) # prints "a.b.c"
     """
     return ".".join(str(obj.__class__).split("'")[1].split(".")[1:])
+
+
+def profile(funcstr):
+    filename = "profile_tmpfile"
+    cProfile.run(funcstr, filename)
+    stats = pstats.Stats(filename)
+    rm(filename)
+    return stats
 
 
 def timer():
