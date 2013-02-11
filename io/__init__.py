@@ -1,3 +1,3 @@
 ## carrot.io.__init__
 
-from _lib import rm
+from .lib import rm
